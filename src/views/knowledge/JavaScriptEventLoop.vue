@@ -2,7 +2,7 @@
   <div class="js-page">
     <header class="hero">
       <h1>Event Loop 事件循环</h1>
-      <p class="hero-sub">面试必考 · 宏任务/微任务 · async/await 执行顺序 · Node.js 事件循环 · 经典输出题</p>
+      <p class="hero-sub">面试必考 · <span class="kw">宏任务</span>/<span class="kw">微任务</span> · <span class="kw">async/await</span> 执行顺序 · <span class="kw">Node.js 事件循环</span> · 经典输出题</p>
     </header>
 
     <nav class="toc">
@@ -15,8 +15,8 @@
     <section id="s1-basics" class="section-card">
       <h2 class="s-title">一、事件循环基础</h2>
       <p class="s-desc">
-        JS 是<strong>单线程</strong>语言，一次只能做一件事。事件循环（Event Loop）是 JS 的<strong>异步调度机制</strong>——把任务排队，按顺序执行。
-        理解事件循环的关键是搞清楚<strong>调用栈、宏任务队列、微任务队列</strong>三者如何配合。
+        JS 是<span class="kw">单线程</span>语言，一次只能做一件事。<span class="kw">事件循环</span>（Event Loop）是 JS 的<span class="kw">异步调度机制</span>——把任务排队，按顺序执行。
+        理解事件循环的关键是搞清楚<span class="kw">调用栈</span>、<span class="kw">宏任务队列</span>、<span class="kw">微任务队列</span>三者如何配合。
       </p>
 
       <h3 class="s-subtitle">① 调用栈（Call Stack）</h3>
@@ -35,10 +35,14 @@
 
       <h3 class="s-subtitle">② 宏任务 vs 微任务</h3>
       <p class="s-desc">
-        <strong>宏任务（MacroTask）</strong>：<code>setTimeout</code>、<code>setInterval</code>、<code>I/O</code>、<code>UI 渲染</code>、<code>requestAnimationFrame</code><br>
-        <strong>微任务（MicroTask）</strong>：<code>Promise.then/catch/finally</code>、<code>MutationObserver</code>、<code>queueMicrotask</code><br><br>
-        每次事件循环：<strong>执行一个宏任务 → 清空所有微任务 → 必要时渲染 → 取下一个宏任务</strong>。
-        微任务可以在一次循环中<strong>无限添加</strong>，会阻塞下一个宏任务。
+        <span class="kw">宏任务（MacroTask）</span>：<code>setTimeout</code>、<code>setInterval</code>、<code>I/O</code>、<code>UI 渲染</code>、<code>requestAnimationFrame</code><br>
+		        <span class="kw-tag">💡</span> <code>requestAnimationFrame(rAF)</code> 严格来说不属于宏任务队列，它在事件循环的<strong>渲染阶段之前</strong>单独有一个队列。浏览器会在每次<strong>渲染之前</strong>执行所有排队的 rAF 回调。常用于动画：保证在下一帧渲染前更新 DOM，不掉帧。优先级：微任务 > <span class="kw">rAF</span> > 渲染 > 宏任务。<br>
+        <span class="kw">微任务（MicroTask）</span>：<code>Promise.then/catch/finally</code>、<code>MutationObserver</code>、<code>queueMicrotask</code><br>
+	        <span class="kw-tag">💡</span> <code>queueMicrotask(fn)</code> 直接向微任务队列推一个任务，等价于 <code>Promise.resolve().then(fn)</code>，但写法更简洁。工作中不常用，但在需要"让一段代码在当前同步任务之后、渲染之前执行"时很有用。<br>
+		        <span class="kw-tag">🔗</span> <strong>和 Vue.nextTick 的区别</strong>：<code>Vue.nextTick(fn)</code> 底层也是用微任务实现的（优先用 <code>Promise</code>，降级 <code>setTimeout</code>），但多了一层 Vue 内部的<strong>批量更新 flushing</strong>——调用 <code>nextTick</code> 时，Vue 会先把响应式变更的副作用 flush 完，再执行你的回调。而 <code>queueMicrotask</code> 是裸的微任务，没有这个批量更新步骤。<br>
+		        <span class="kw-tag">💡</span> <strong>MutationObserver</strong>：监听 DOM 变化的 API，回调也是微任务。比如检测某个元素 class 变了、子节点增删了。React 和 Vue 底层都用过它来做 DOM 变化侦测（Vue 2 的 nextTick 降级方案之一也用到了它）。日常工作很少直接操作它，但要知道它是微任务的来源之一。<br><br>
+        每次事件循环：<span class="kw">执行一个宏任务 → 清空所有微任务 → 必要时渲染 → 取下一个宏任务</span>。
+        微任务可以在一次循环中<span class="kw">无限添加</span>，会阻塞下一个宏任务。
       </p>
       <div class="demo-area">
         <div class="demo-code-header">
@@ -53,7 +57,14 @@
       </div>
 
       <div class="s-tip">
-        💡 <strong>面试高频</strong>：记住口诀——"<strong>一个宏任务，一筐微任务</strong>"。每次事件循环只取一个宏任务，但微任务会一直清空到队列为空才停下。
+        💡 <span class="kw">面试高频</span>：记住口诀——"<span class="kw">一个宏任务，一筐微任务</span>"。每次事件循环只取一个宏任务，但微任务会一直清空到队列为空才停下。
+      </div>
+
+      <div class="s-tip s-tip-warn">
+        ⚠️ <strong>常见困惑</strong>：上面说"执行一个宏任务 → 清空所有微任务"，但为什么实际跑起来微任务（Promise.then）总是比下一个宏任务（setTimeout）先输出？<br><br>
+        关键点：<strong>整段脚本本身就是第一个宏任务</strong>。所以流程其实是：<br>
+        <code>宏任务 #1（脚本）</code> → 脚本执行中产出的微任务排队 → 脚本结束 → <code>清空微任务队列</code> → <code>宏任务 #2（setTimeout 回调）</code><br><br>
+        也就是说，"<span class="kw">微任务不在所有宏任务之前，而是在下一个宏任务之前</span>"。初始脚本执行完立刻清空微任务，所以 Promise.then 必然在 setTimeout 之前输出。
       </div>
     </section>
 
@@ -63,7 +74,9 @@
     <section id="s2-browser" class="section-card">
       <h2 class="s-title">二、浏览器事件循环 + async/await</h2>
       <p class="s-desc">
-        <code>async/await</code> 本质是 Promise 的语法糖。<code>await</code> 后面的代码相当于被包裹在 <code>.then()</code> 中，属于<strong>微任务</strong>。
+        <code>async/await</code> 本质是 <span class="kw">Promise 的语法糖</span>。<br><br>
+	        <strong>❗ 容易误解的地方</strong>：<code>await bar()</code> 这行代码 —— <span class="kw">右边的 <code>bar()</code> 是同步执行的</span>，只有 <span class="kw">await 这一行<em>之后</em>的代码</span>才会被包装成 <code>.then()</code> 丢进微任务队列。<br>
+	        也就是说 <code>await</code> 以自身为分界线：<strong>右边同步，下面微任务</strong>。
         这是面试中最容易搞混的地方。
       </p>
       <div class="demo-area">
@@ -91,8 +104,8 @@
       </div>
 
       <div class="s-tip">
-        💡 <strong>面试高频</strong>：Event Loop 输出题是最常见的笔试题。分析步骤——先找同步代码 → 再找微任务（Promise.then / await） → 再找宏任务（setTimeout）。
-        注意 <code>Promise 构造函数本身是同步执行的</code>，<code>then/catch/finally</code> 才是微任务。
+        💡 <strong>面试高频</strong>：Event Loop 输出题是最常见的笔试题。分析步骤——先找<span class="kw">同步代码</span> → 再找<span class="kw">微任务</span>（Promise.then / await） → 再找<span class="kw">宏任务</span>（setTimeout）。
+        注意 <span class="kw">Promise 构造函数本身是同步执行的</span>，<code>then/catch/finally</code> 才是微任务。
       </div>
     </section>
 
@@ -102,7 +115,44 @@
     <section id="s3-node" class="section-card">
       <h2 class="s-title">三、Node.js 事件循环 <span class="s-badge">进阶</span></h2>
       <p class="s-desc">
-        Node.js 的事件循环分<strong>六个阶段</strong>，每个阶段有一个宏任务队列。与浏览器最大的区别是多了 <code>process.nextTick</code> 和 <code>setImmediate</code>。
+        Node.js 的事件循环分<span class="kw">六个阶段</span>，每个阶段有一个**自己的宏任务队列**，按固定顺序轮转：</p>
+	      <div class="phase-diagram">
+	        <code class="phase-chain">timers → pending → idle/prepare → <span class="hl">poll</span> → check → close</code>
+	      </div>
+	      <p class="s-desc">每个阶段都会执行以下操作：<span class="kw">先执行该阶段的宏任务队列</span> → then 清空 <span class="kw">nextTick 队列</span> → then 清空 <span class="kw">微任务队列</span>，然后进入下一阶段。</p>
+
+	      <h3 class="s-subtitle">各阶段详解</h3>
+	      <div class="phase-detail">
+	        <div class="phase-item">
+	          <span class="phase-name">① timers</span>
+	          <span class="phase-desc">执行 <code>setTimeout</code> 和 <code>setInterval</code> 的回调。定时器到达指定时间后，回调被放入此阶段的队列。注意：<code>setTimeout(fn, 0)</code> 的 0 不是立即执行，而是"尽快排队"，实际延迟通常有 1-4ms 偏差。</span>
+	        </div>
+	        <div class="phase-item">
+	          <span class="phase-name">② pending</span>
+	          <span class="phase-desc">执行上一轮遗留的 I/O 回调。比如 TCP 连接失败时，<code>ECONNREFUSED</code> 等系统错误回调会在这里处理，而不是在 poll 阶段。日常开发基本感知不到这个阶段的存在。</span>
+	        </div>
+	        <div class="phase-item">
+	          <span class="phase-name">③ idle / prepare</span>
+	          <span class="phase-desc">Node.js 内部使用的阶段，与外部代码无关。<DefTooltip tip="libuv 是 Node.js 底层的异步 I/O 库，用 C 语言编写。事件循环的六个阶段就是由 libuv 实现的。它负责处理文件读写、网络请求、DNS 查询等底层操作">libuv</DefTooltip> 内部做一些准备工作，比如计算时间、轮询前的初始化等。你写代码永远不会直接碰到这个阶段。</span>
+	        </div>
+	        <div class="phase-item">
+	          <span class="phase-name hl">④ poll（最重要的阶段）</span>
+	          <span class="phase-desc">这是 <span class="kw">绝大多数 I/O 回调被执行的地方</span>。处理文件读写、网络请求、数据库查询等异步操作的回调。如果 poll 队列为空，Node 会在这里等待新的事件到达，或者如果检测到有 <code>setImmediate</code> 在排队，就直接跳到 check 阶段。</span>
+	        </div>
+	        <div class="phase-item">
+	          <span class="phase-name">⑤ check</span>
+	          <span class="phase-desc">执行 <code>setImmediate</code> 的回调。之所以叫 check，是因为它"检查" poll 阶段过后是否需要立即执行一些操作。当一个 I/O 回调完成后需要立刻做某事时，<code>setImmediate</code> 是比 <code>setTimeout(fn, 0)</code> 更可靠的选择。</span>
+	        </div>
+	        <div class="phase-item">
+	          <span class="phase-name">⑥ close</span>
+	          <span class="phase-desc">执行关闭事件的回调，比如 <code>socket.on('close', ...)</code>、<code>stream.destroy()</code> 等。如果一个 socket 或 handle 被突然关闭，它的回调会在这里触发。这也是事件循环的最后一站，处理完就进入下一轮循环。</span>
+	        </div>
+	      </div>
+	      <p class="s-desc">与浏览器最大的区别是多了 <span class="kw">process.nextTick</span> 和 <span class="kw">setImmediate</span>。<br><br>
+	        <code>setTimeout(fn, 0)</code> 在 <span class="kw">timers 阶段</span>执行，<code>setImmediate</code> 在 <span class="kw">check 阶段</span>执行。<br><br>
+	        <strong>⚠️ 两者的执行顺序取决于调用位置：</strong><br>
+	        · <strong>不在 I/O 回调中</strong>（如模块顶层）：顺序<span class="kw">不确定</span>，取决于机器启动速度<br>
+	        · <strong>在 I/O 回调中</strong>（如 fs.readFile）：<span class="kw">setImmediate 总是先于 setTimeout</span>，因为事件循环从 poll 阶段出来先到 check 阶段，下一轮才到 timers 阶段
       </p>
       <div class="demo-area">
         <div class="demo-code-header">
@@ -117,8 +167,8 @@
       </div>
 
       <div class="s-tip">
-        💡 <strong>面试加分</strong>：<code>process.nextTick</code> 的优先级<strong>高于</strong> Promise 微任务，它不属于事件循环的六个阶段，而是在每个阶段<strong>切换时</strong>被清空。<br>
-        <code>setImmediate</code> 在 check 阶段执行，<code>setTimeout(fn, 0)</code> 在 timers 阶段执行。在 I/O 回调中，<code>setImmediate</code> 总是先于 <code>setTimeout(fn, 0)</code>。
+        💡 <span class="kw">面试加分</span>：<code>process.nextTick</code> 的<span class="kw">优先级高于 Promise 微任务</span>，它不属于事件循环的六个阶段，而是在每个阶段<span class="kw">切换时被清空</span>。<br>
+        <code>setImmediate</code> 在 <span class="kw">check 阶段</span>执行，<code>setTimeout(fn, 0)</code> 在 <span class="kw">timers 阶段</span>执行。在 I/O 回调中（如 fs.readFile），<span class="kw">setImmediate 总是先于 setTimeout(fn, 0)</span>；在模块顶层执行时，两者顺序<span class="kw">不确定</span>，取决于机器启动速度。
       </div>
     </section>
 
@@ -174,6 +224,7 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import DefTooltip from '@/components/DefTooltip.vue'
 
 const toc = [
   { id: 's1-basics',    label: '事件循环基础' },
@@ -257,7 +308,7 @@ console.log('1')
 
 async function foo() {
   console.log('2')
-  await bar()
+  await bar()           // ★ bar() 同步执行，后面的代码才进微任务
   console.log('5  await 后面的代码是微任务')
 }
 async function bar() {
@@ -266,7 +317,8 @@ async function bar() {
 
 foo()
 
-// await 下面的代码等价于 Promise.resolve().then(...)
+// 关键：await 右边的 bar() 是同步执行的（输出 3）
+// 只有 await 下面的代码（输出 5）才被包装成微任务排队
 Promise.resolve().then(() => {
   console.log('6  和上面 await 在同一批微任务中')
 })
@@ -277,8 +329,9 @@ setTimeout(() => {
 
 console.log('4')
 
-// 关键：await 会同步执行右边的函数，
-// 然后把 await 下面的代码当作微任务排队`,
+// 关键：await bar()
+//   ├─ bar()        ← 同步执行！立即输出
+//   └─ 后面的代码    ← 包装成微任务，排队等待`,
     output: '',
   },
   classicQuiz: {
@@ -312,28 +365,39 @@ console.log('f')
     output: '',
   },
   nodeEventLoop: {
-    code: `// Node.js 事件循环
+    code: `// ===== 场景一：不在 I/O 回调中（顺序不确定）=====
 console.log('1 同步')
 
-setImmediate(() => {
-  console.log('5 setImmediate（check 阶段）')
-})
-
 setTimeout(() => {
-  console.log('4 setTimeout（timers 阶段）')
+  console.log('? setTimeout（timers 阶段）')
 }, 0)
 
+setImmediate(() => {
+  console.log('? setImmediate（check 阶段）')
+})
+
 process.nextTick(() => {
-  console.log('2 nextTick（每次切换阶段前清空）')
+  console.log('2 nextTick（阶段切换前清空）')
 })
 
 Promise.resolve().then(() => {
   console.log('3 Promise.then（微任务）')
 })
 
-// Node.js 输出顺序：
-// 1 同步 → 2 nextTick → 3 Promise.then
-// → 4 setTimeout（timers阶段） → 5 setImmediate（check阶段）
+// 此场景下 timeout 和 immediate 谁先不确定！
+// 因为 0ms 延迟不一定在 timers 阶段前到期
+//
+// 稳定部分：1 同步 → 2 nextTick → 3 Promise.then
+//
+// ===== 场景二：在 I/O 回调中（immediate 稳赢）=====
+// const fs = require('fs')
+// fs.readFile(__filename, () => {
+//   setTimeout(() => console.log('4 timeout'), 0)
+//   setImmediate(() => console.log('5 immediate'))
+// })
+// // 输出：5 immediate → 4 timeout
+// // 原因：readFile 回调在 poll 阶段执行，
+// //      出来先到 check 阶段（immediate），下一轮才到 timers（timeout）
 //
 // 六个阶段：timers → pending → idle/prepare → poll → check → close`,
     output: '',
@@ -380,7 +444,7 @@ function runCode(key: string) {
   }
   if (key === 'nodeEventLoop') {
     // Node.js 特有 API 在浏览器中不可用，显示说明
-    snippets[key].output = '⚠️ process.nextTick 和 setImmediate 是 Node.js 特有 API，浏览器不支持。\n在 Node.js 环境中运行输出为：\n1 同步 → 2 nextTick → 3 Promise.then → 4 setTimeout → 5 setImmediate\n\n（代码已保留，方便你在 Node 中测试）'
+    snippets[key].output = '⚠️ process.nextTick 和 setImmediate 是 Node.js 特有 API，浏览器不支持。\n在 Node.js 环境中：\n\n📌 场景一（模块顶层，顺序不确定）：\n1 同步 → 2 nextTick → 3 Promise.then → ? setTimeout/? setImmediate\n（谁先看机器启动速度，每次可能不同）\n\n📌 场景二（I/O 回调中，immediate 稳赢）：\n1 同步 → 2 nextTick → 3 Promise.then → 5 immediate → 4 timeout\n\n（代码已保留，放到 .js 文件里用 node 运行测试）'
     return
   }
 
@@ -468,17 +532,17 @@ const questions = [
   {
     level: 1,
     q: '什么是事件循环？说说浏览器事件循环的机制。',
-    a: '<strong>事件循环</strong>是 JS 的异步调度机制。因为 JS 是单线程，异步任务需要排队执行，事件循环就是管理这个队列的机制。<br><br><strong>浏览器事件循环流程</strong>：<br>① 执行<strong>一个宏任务</strong>（最初是整段脚本）<br>② 检查微任务队列，<strong>全部清空</strong><br>③ 必要时候<strong>渲染 UI</strong><br>④ 取<strong>下一个宏任务</strong>，重复<br><br><strong>宏任务</strong>：<code>setTimeout</code>、<code>setInterval</code>、<code>I/O</code>、<code>UI 渲染</code><br><strong>微任务</strong>：<code>Promise.then/catch/finally</code>、<code>MutationObserver</code>、<code>queueMicrotask</code><br><br><strong>面试回答框架</strong>：单线程背景 → 调用栈 → 宏任务队列 → 微任务队列 → "一个宏任务一筐微任务" → 举例说明。',
+    a: '<span class="kw">事件循环</span>是 JS 的异步调度机制。因为 JS 是单线程，异步任务需要排队执行，事件循环就是管理这个队列的机制。<br><br><span class="kw">浏览器事件循环流程</span>：<br>① 执行<span class="kw">一个宏任务</span>（最初是整段脚本）<br>② 检查微任务队列，<span class="kw">全部清空</span><br>③ 必要时候<span class="kw">渲染 UI</span><br>④ 取<span class="kw">下一个宏任务</span>，重复<br><br><span class="kw">宏任务</span>：<code>setTimeout</code>、<code>setInterval</code>、<code>I/O</code>、<code>UI 渲染</code><br><span class="kw">微任务</span>：<code>Promise.then/catch/finally</code>、<code>MutationObserver</code>、<code>queueMicrotask</code><br><br><span class="kw">面试回答框架</span>：单线程背景 → 调用栈 → 宏任务队列 → 微任务队列 → "一个宏任务一筐微任务" → 举例说明。',
   },
   {
     level: 2,
     q: 'async/await 在事件循环中如何工作？await 后面的代码什么时候执行？',
-    a: '<code>async/await</code> 本质是 Promise 的语法糖。<br><br><strong>关键理解</strong>：<br>· <code>await</code> 右边的表达式会<strong>同步执行</strong><br>· <code>await</code> 下面的代码被包装成 <code>.then()</code> 回调，属于<strong>微任务</strong><br><br><strong>例如</strong>：<br><code>async function foo() {</code><br><code>&nbsp;&nbsp;console.log(1)</code><br><code>&nbsp;&nbsp;await bar()  // 同步执行 bar</code><br><code>&nbsp;&nbsp;console.log(2)  // 被包装成微任务</code><br><code>}</code><br><br>等价于：<br><code>function foo() {</code><br><code>&nbsp;&nbsp;console.log(1)</code><br><code>&nbsp;&nbsp;return Promise.resolve(bar()).then(() => {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;console.log(2)</code><br><code>&nbsp;&nbsp;})</code><br><code>}</code><br><br><strong>面试技巧</strong>：遇到 async/await 的输出题，先把 <code>await</code> 拆成 <code>Promise.resolve().then()</code> 再看执行顺序。',
+    a: '<code>async/await</code> 本质是 <span class="kw">Promise 的语法糖</span>。<br><br><strong>关键理解</strong>：<br>· <code>await</code> 右边的表达式会<span class="kw">同步执行</span><br>· <code>await</code> 下面的代码被包装成 <code>.then()</code> 回调，属于<span class="kw">微任务</span><br><br><strong>例如</strong>：<br><code>async function foo() {</code><br><code>&nbsp;&nbsp;console.log(1)</code><br><code>&nbsp;&nbsp;await bar()  // 同步执行 bar</code><br><code>&nbsp;&nbsp;console.log(2)  // 被包装成微任务</code><br><code>}</code><br><br>等价于：<br><code>function foo() {</code><br><code>&nbsp;&nbsp;console.log(1)</code><br><code>&nbsp;&nbsp;return Promise.resolve(bar()).then(() => {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;console.log(2)</code><br><code>&nbsp;&nbsp;})</code><br><code>}</code><br><br><span class="kw">面试技巧</span>：遇到 async/await 的输出题，先把 <code>await</code> 拆成 <code>Promise.resolve().then()</code> 再看执行顺序。',
   },
   {
     level: 3,
     q: '宏任务和微任务有哪些？微任务会阻塞渲染吗？',
-    a: '<strong>宏任务</strong>：<code>script（整体代码）</code>、<code>setTimeout</code>、<code>setInterval</code>、<code>I/O</code>、<code>UI 渲染</code>、<code>requestAnimationFrame</code>、<code>setImmediate（Node）</code><br><br><strong>微任务</strong>：<code>Promise.then/catch/finally</code>、<code>MutationObserver</code>、<code>queueMicrotask</code>、<code>process.nextTick（Node，优先级更高）</code><br><br><strong>微任务会阻塞渲染吗？</strong><br><strong>会</strong>。浏览器执行渲染的时机是在"清空微任务队列之后，取下一个宏任务之前"。如果你在微任务中不断添加新的微任务，渲染就会被<strong>无限推迟</strong>。<br><br><code>function block() {</code><br><code>&nbsp;&nbsp;Promise.resolve().then(block)  // 无限添加微任务，页面卡死</code><br><code>}</code><br><br><strong>面试加分</strong>：<code>requestAnimationFrame</code> 既不是宏任务也不是微任务，它在<strong>渲染之前</strong>执行，属于"动画帧回调队列"。所以 <code>requestAnimationFrame</code> 的优先级高于宏任务但低于微任务。',
+    a: '<span class="kw">宏任务</span>：<code>script（整体代码）</code>、<code>setTimeout</code>、<code>setInterval</code>、<code>I/O</code>、<code>UI 渲染</code>、<code>requestAnimationFrame</code>、<code>setImmediate（Node）</code><br><br><span class="kw">微任务</span>：<code>Promise.then/catch/finally</code>、<code>MutationObserver</code>、<code>queueMicrotask</code>、<code>process.nextTick（Node，优先级更高）</code><br><br><span class="kw">微任务会阻塞渲染吗？</span><br><span class="kw">会</span>。浏览器执行渲染的时机是在"清空微任务队列之后，取下一个宏任务之前"。如果你在微任务中不断添加新的微任务，渲染就会被<span class="kw">无限推迟</span>。<br><br><code>function block() {</code><br><code>&nbsp;&nbsp;Promise.resolve().then(block)  // 无限添加微任务，页面卡死</code><br><code>}</code><br><br><span class="kw">面试加分</span>：<span class="kw">requestAnimationFrame</span> 既不是宏任务也不是微任务，它在<span class="kw">渲染之前</span>执行，属于<span class="kw">动画帧回调队列</span>。所以 requestAnimationFrame 的优先级高于宏任务但低于微任务。',
   },
 ]
 </script>
@@ -488,6 +552,8 @@ const questions = [
 .hero { text-align: center; padding: 2.5rem 1rem 2rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem; }
 .hero h1 { font-size: 1.8rem; color: var(--color-heading); margin-bottom: 0.5rem; }
 .hero-sub { color: var(--color-text); opacity: 0.6; font-size: 0.95rem; }
+.kw { color: hsla(160, 100%, 37%, 1); font-weight: 600; }
+.kw-tag { font-size: 0.82rem; }
 .toc { display: flex; gap: 6px; flex-wrap: wrap; padding: 0.8rem 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); position: sticky; top: 0; background: var(--color-background); z-index: 10; }
 .toc-link { font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; background: var(--color-background-soft); color: var(--color-text); text-decoration: none; border: 1px solid var(--color-border); transition: all 0.2s; }
 .toc-link:hover { background: var(--color-background-mute); color: var(--color-heading); border-color: var(--color-heading); }
@@ -497,7 +563,17 @@ const questions = [
 .s-subtitle { font-size: 1.05rem; color: var(--color-heading); margin: 1.5rem 0 0.5rem; padding-left: 0.5rem; border-left: 3px solid hsla(160, 100%, 37%, 1); }
 .s-desc { font-size: 0.92rem; line-height: 1.6; color: var(--color-text); opacity: 0.8; margin-bottom: 0.8rem; }
 .s-desc code { background: color-mix(in srgb, var(--color-border) 40%, transparent); padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }
+.phase-diagram { background: var(--color-background); border: 1px solid var(--color-border); border-radius: 8px; padding: 1rem; text-align: center; margin-bottom: 1rem; }
+.phase-chain { font-size: 0.95rem; font-family: 'Cascadia Code', 'Fira Code', monospace; color: var(--color-text); }
+.phase-chain .hl { color: hsla(160, 100%, 37%, 1); font-weight: 700; }
+.phase-detail { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; }
+.phase-item { background: var(--color-background); border: 1px solid var(--color-border); border-radius: 6px; padding: 0.7rem 1rem; }
+.phase-name { display: block; font-weight: 700; color: var(--color-heading); font-size: 0.9rem; margin-bottom: 2px; }
+.phase-name.hl { color: hsla(160, 100%, 37%, 1); }
+.phase-desc { font-size: 0.85rem; line-height: 1.6; color: var(--color-text); opacity: 0.8; }
+.phase-desc code { font-size: 0.82em; }
 .s-tip { background: color-mix(in srgb, hsla(160, 100%, 37%, 1) 10%, transparent); border-left: 3px solid hsla(160, 100%, 37%, 1); padding: 0.8rem 1rem; border-radius: 0 6px 6px 0; font-size: 0.88rem; line-height: 1.6; color: var(--color-text); margin-top: 1rem; }
+.s-tip-warn { background: color-mix(in srgb, #f0c040 12%, transparent); border-left-color: #f0c040; }
 .demo-area { background: var(--color-background); border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
 .demo-code-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: var(--color-background-mute); border-bottom: 1px solid var(--color-border); }
 .demo-code-filename { font-size: 0.78rem; color: var(--color-text); opacity: 0.5; font-family: 'Cascadia Code', 'Fira Code', monospace; }
