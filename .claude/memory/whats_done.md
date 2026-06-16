@@ -26,5 +26,12 @@ metadata:
 - 动手实验区：可编辑代码运行，3 个预设练习 hint
 - 面试问答 14 题（⭐~⭐⭐⭐），覆盖 var/let/const/TDZ/闭包/箭头函数 this/防抖等
 
+### JavaScript Promise 页面 (`/javascript-promise`)
+- 8 个知识点章节（Promise 基础/三种状态/构造函数/then-catch-finally/链式调用/静态方法大全/错误处理/async-await详解/手写实现）
+- 交互式 Demo（16 个可运行代码示例，覆盖基础到进阶）
+- 手写实现（简易 Promise / Promise.all / Promise.race）
+- 面试问答 9 题（⭐~⭐⭐⭐）
+- DefTooltip 悬浮提示（状态不可逆、thenable 展开、Promise A+ 规范、Generator 关系）
+
 ### 待完成（首要任务）
 刷题综合页面——将两套面试题抽离为共享数据源，配合 SM-2 间隔重复算法，支持筛选/随机/统计。

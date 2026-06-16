@@ -33,7 +33,7 @@ const router = createRouter({
     {
       path: '/javascript-promise',
       name: 'javascript-promise',
-      component: () => import('../views/PlaceholderView.vue'),
+      component: () => import('../views/knowledge/JavaScriptPromise.vue'),
     },
 
     // ─── Vue 3 深度 ───
