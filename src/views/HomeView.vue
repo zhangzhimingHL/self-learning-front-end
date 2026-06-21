@@ -106,6 +106,8 @@ const groups: RoadmapGroup[] = [
       { icon: '⛓️', title: '原型与继承', desc: '原型链、继承方式、class 语法、instanceof 原理', path: '/javascript-prototype' },
       { icon: '🔄', title: 'Event Loop', desc: '宏任务/微任务、浏览器与 Node 事件循环、输出题', path: '/javascript-event-loop' },
       { icon: '🤝', title: 'Promise 与异步', desc: 'Promise A+、async/await、手写 Promise.all/race', path: '/javascript-promise' },
+      { icon: '📋', title: '深拷贝', desc: '浅深对比、JSON 局限、手写递归深拷贝、循环引用 WeakMap', path: '/javascript-deep-clone' },
+      { icon: '🔄', title: '类型转换', desc: '显式/隐式转换、== vs ===、ToPrimitive、经典面试题', path: '/javascript-type-coercion' },
     ],
   },
   {

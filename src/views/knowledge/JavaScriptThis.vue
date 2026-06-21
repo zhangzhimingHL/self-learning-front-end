@@ -138,11 +138,76 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- Section 4: 动手实验区 -->
+    <!-- Section 4: 手写 call/apply/bind -->
     <!-- ============================================================ -->
-    <section id="s4-playground" class="section-card">
-      <h2 class="s-title">四、🧪 动手实验区</h2>
-      <p class="s-desc">修改下面的代码，观察 this 的变化。换调用方式、换严格模式、试试箭头和普通函数的相互嵌套。</p>
+    <section id="s4-handwrite" class="section-card">
+      <h2 class="s-title">四、手写 call/apply/bind <span class="s-badge">高频手写</span></h2>
+      <p class="s-desc">
+        <span class="kw">腾讯</span> <span class="s-badge-sm">几乎必考</span>
+        <span class="kw">字节跳动</span> <span class="s-badge-sm">高频</span><br>
+        手写 call/apply/bind 是面试高频题——能看出你对 this 绑定、参数处理、原型方法的理解深度。
+      </p>
+
+      <h3 class="s-subtitle">① 手写 call</h3>
+      <p class="s-desc">
+        <code>call</code> 的核心：把函数作为对象的临时方法调用，执行完后删除。
+      </p>
+      <div class="demo-area">
+        <div class="demo-code-header">
+          <span class="demo-code-filename">my-call.js</span>
+          <button class="run-btn" @click="runCode('myCall')">▶ 运行</button>
+        </div>
+        <pre class="code-block"><code>{{ snippets.myCall.code }}</code></pre>
+        <div class="output-panel" :class="{ 'has-content': snippets.myCall.output }">
+          <div class="output-label">Console Output</div>
+          <pre class="output-content">{{ snippets.myCall.output || '点击 "运行" 测试手写 call' }}</pre>
+        </div>
+      </div>
+
+      <h3 class="s-subtitle">② 手写 apply</h3>
+      <p class="s-desc">
+        <code>apply</code> 和 <code>call</code> 类似，只是参数是数组。
+      </p>
+      <div class="demo-area">
+        <div class="demo-code-header">
+          <span class="demo-code-filename">my-apply.js</span>
+          <button class="run-btn" @click="runCode('myApply')">▶ 运行</button>
+        </div>
+        <pre class="code-block"><code>{{ snippets.myApply.code }}</code></pre>
+        <div class="output-panel" :class="{ 'has-content': snippets.myApply.output }">
+          <div class="output-label">Console Output</div>
+          <pre class="output-content">{{ snippets.myApply.output || '点击 "运行" 测试手写 apply' }}</pre>
+        </div>
+      </div>
+
+      <h3 class="s-subtitle">③ 手写 bind</h3>
+      <p class="s-desc">
+        <code>bind</code> 最难——它返回新函数，支持预设参数（偏函数），且支持 <code>new</code> 覆盖。
+      </p>
+      <div class="demo-area">
+        <div class="demo-code-header">
+          <span class="demo-code-filename">my-bind.js</span>
+          <button class="run-btn" @click="runCode('myBind')">▶ 运行</button>
+        </div>
+        <pre class="code-block"><code>{{ snippets.myBind.code }}</code></pre>
+        <div class="output-panel" :class="{ 'has-content': snippets.myBind.output }">
+          <div class="output-label">Console Output</div>
+          <pre class="output-content">{{ snippets.myBind.output || '点击 "运行" 测试手写 bind' }}</pre>
+        </div>
+      </div>
+
+      <div class="s-tip">
+        💡 <strong>面试技巧</strong>：手写 bind 是 call/apply/bind 中最常考的。核心逻辑——<strong>闭包保存 this 和参数，返回一个新函数，内部用 apply 调用原函数</strong>。
+        如果面试官问"你的 bind 实现支持 new 吗？"，答出"判断 this instanceof 构造函数"就是满分。
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 5: 动手实验区 -->
+    <!-- ============================================================ -->
+    <section id="s5-playground" class="section-card">
+      <h2 class="s-title">五、🧪 动手实验区</h2>
+      <p class="s-desc">修改下面的代码，观察 this 的变化。换调用方式、换严格模式、试试箭头和普通函数的相互嵌套。试试上面的手写 call/apply/bind。</p>
 
       <div class="demo-area">
         <div class="demo-code-header">
@@ -173,10 +238,10 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- Section 5: 面试问答 -->
+    <!-- Section 6: 面试问答 -->
     <!-- ============================================================ -->
-    <section id="s5-qa" class="section-card">
-      <h2 class="s-title">五、面试高频问答（⭐→⭐⭐⭐）</h2>
+    <section id="s6-qa" class="section-card">
+      <h2 class="s-title">六、面试高频问答（⭐→⭐⭐⭐）</h2>
       <p class="s-desc">点击问题展开答案，先思考再看解析。</p>
 
       <div class="qa-list">
@@ -206,9 +271,10 @@ import { ref, reactive } from 'vue'
 const toc = [
   { id: 's1-rules',      label: '四种绑定' },
   { id: 's2-priority',   label: '优先级' },
-  { id: 's3-arrow',      label: '箭头函数' },
-  { id: 's4-playground', label: '动手实验' },
-  { id: 's5-qa',         label: '面试问答' },
+  { id: 's3-arrow',       label: '箭头函数' },
+  { id: 's4-handwrite',   label: '手写 call/apply/bind' },
+  { id: 's5-playground',  label: '动手实验' },
+  { id: 's6-qa',          label: '面试问答' },
 ]
 
 // ─── 安全执行代码 ───
@@ -458,6 +524,93 @@ timer.bad()
 timer.good()`,
     output: '',
   },
+  myCall: {
+    code: `// ===== 手写 call =====
+Function.prototype.myCall = function(context, ...args) {
+  // 处理 null/undefined → 指向全局（非严格模式）
+  context = context ?? globalThis
+  // 用 Symbol 避免属性名冲突
+  const key = Symbol('fn')
+  context[key] = this     // this 就是原函数
+  const result = context[key](...args)  // 调用函数，this 指向 context
+  delete context[key]     // 用完删除临时属性
+  return result
+}
+
+// 测试
+function greet(greeting, punctuation) {
+  console.log(greeting + ', ' + this.name + punctuation)
+}
+
+const person = { name: '张三' }
+greet.myCall(person, '你好', '！')  // 你好, 张三！`,
+    output: '',
+  },
+  myApply: {
+    code: `// ===== 手写 apply =====
+Function.prototype.myApply = function(context, args) {
+  context = context ?? globalThis
+  const key = Symbol('fn')
+  context[key] = this
+  const result = context[key](...(args || []))  // 展开参数数组
+  delete context[key]
+  return result
+}
+
+// 测试
+function introduce(job, hobby) {
+  console.log('我叫' + this.name + '，做' + job + '，喜欢' + hobby)
+}
+
+const user = { name: '李四' }
+introduce.myApply(user, ['前端开发', '篮球'])  // 我叫李四，做前端开发，喜欢篮球
+
+// 典型场景：Math.max 借用
+const numbers = [3, 1, 4, 1, 5, 9]
+console.log('最大值:', Math.max.myApply(null, numbers))  // 9`,
+    output: '',
+  },
+  myBind: {
+    code: `// ===== 手写 bind（支持 new） =====
+Function.prototype.myBind = function(context, ...bindArgs) {
+  const original = this  // 保存原函数
+
+  const bound = function(...callArgs) {
+    // 如果被 new 调用，this 指向新创建的对象，忽略绑定的 context
+    // 否则，使用绑定的 context
+    return original.apply(
+      new.target ? this : (context ?? globalThis),
+      bindArgs.concat(callArgs)
+    )
+  }
+
+  // 维护原型链，让 instanceof 正常工作
+  bound.prototype = original.prototype
+
+  return bound
+}
+
+// ===== 测试 =====
+const obj = { name: '绑定对象' }
+
+function sayHi(city, age) {
+  console.log('this.name:', this.name, '| city:', city, '| age:', age)
+}
+
+// 基本绑定
+const boundFn = sayHi.myBind(obj, '北京')
+boundFn(25)  // this.name: 绑定对象 | city: 北京 | age: 25
+
+// new 覆盖 bind
+function Person(name) {
+  this.name = name
+}
+const BoundPerson = Person.myBind({ name: '不会用到' })
+const p = new BoundPerson('小明')
+console.log('p.name:', p.name)  // 小明（不是"不会用到"）
+console.log('p instanceof Person:', p instanceof Person)  // true`,
+    output: '',
+  },
   playground: {
     code: `// 来试试 this 的各种场景！
 // 试着修改调用方式，观察 this 变化
@@ -587,7 +740,7 @@ const questions = [
   },
   {
     level: 2,
-    q: 'call、apply、bind 的区别是什么？',
+    q: 'call、apply、bind 的区别是什么？（含手写）【腾讯/字节 几乎必考】',
     a: '<strong>共同点</strong>：都用于显式指定 <code>this</code>。<br><br><strong>区别</strong>：<br>· <code>call(this, arg1, arg2, ...)</code> — 参数<strong>列表</strong>，<strong>立即执行</strong><br>· <code>apply(this, [arg1, arg2])</code> — 参数<strong>数组</strong>，<strong>立即执行</strong><br>· <code>bind(this, arg1, arg2)</code> — 返回<strong>新函数</strong>，<strong>不立即执行</strong><br><br><strong>手写 bind 核心</strong>（面试高频）：<br><code>function myBind(fn, thisArg, ...args) {</code><br><code>&nbsp;&nbsp;return function(...rest) {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;return fn.apply(thisArg, args.concat(rest))</code><br><code>&nbsp;&nbsp;}</code><br><code>}</code><br><br><strong>使用场景</strong>：<br>· <code>call</code>：借用方法（如 <code>Array.prototype.slice.call(arguments)</code>）<br>· <code>apply</code>：参数是数组的场景（如 <code>Math.max.apply(null, arr)</code>）<br>· <code>bind</code>：回调函数固定 this、偏函数（预设参数）',
   },
   {
@@ -693,6 +846,17 @@ const questions = [
   color: #8b5cf6;
   vertical-align: middle;
   margin-left: 8px;
+}
+.s-badge-sm {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #8b5cf622;
+  color: #8b5cf6;
+  vertical-align: middle;
+  margin-left: 4px;
 }
 .s-subtitle {
   font-size: 1.05rem;

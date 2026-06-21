@@ -2,4 +2,8 @@
 - [刷题页面规划](interview_app_plan.md) — SM-2 间隔重复刷题系统，纯前端 localStorage
 - [已完成内容](whats_done.md) — 已完成的页面和功能记录
 - [主动记忆提醒](proactive_memory_reminder.md) — 遇到重要决策时主动问用户是否要记录
-- [学习路线图](learning_roadmap.md) — 15k+ 前端知识点规划，一一讲一练路线
+- [用户目标](user_goals.md) — 4年经验备战15k+一二线前端岗，需复习路线+知识扩展
+- [内容深度标准](content_depth_standard.md) — 所有知识点达到原理层/手写层/对比层/源码层深度
+- [关键字高亮](keyword_highlight.md) — 页面设计时核心关键字做视觉高亮，防止走神
+- [不跳过知识点](no_skip_knowledge.md) — 陌生概念要通过 tooltip / 展开方式提供解析，不让用户卡住
+- [内容标准：面试驱动](content_standard_interview.md) — 所有知识点以大厂真题驱动，含可运行Demo + 手写实现 + 面试Q&A

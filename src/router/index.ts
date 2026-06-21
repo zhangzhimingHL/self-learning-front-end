@@ -9,6 +9,17 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
     },
 
+    {
+      path: '/javascript-deep-clone',
+      name: 'javascript-deep-clone',
+      component: () => import('../views/knowledge/JavaScriptDeepClone.vue'),
+    },
+    {
+      path: '/javascript-type-coercion',
+      name: 'javascript-type-coercion',
+      component: () => import('../views/knowledge/JavaScriptTypeCoercion.vue'),
+    },
+
     // ─── JS 基础 ───
     {
       path: '/javascript-core',

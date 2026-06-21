@@ -135,10 +135,46 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- Section 5: 动手实验区 -->
+    <!-- Section 5: 手写 new -->
     <!-- ============================================================ -->
-    <section id="s5-playground" class="section-card">
-      <h2 class="s-title">五、🧪 动手实验区</h2>
+    <section id="s5-handwrite" class="section-card">
+      <h2 class="s-title">五、手写 new 操作符 <span class="s-badge">高频手写</span></h2>
+      <p class="s-desc">
+        <span class="kw">腾讯</span> <span class="s-badge-sm">必考</span>
+        <span class="kw">字节跳动</span> <span class="s-badge-sm">高频</span><br>
+        <code>new</code> 操作符是 JS 中最核心的机制之一。手写 <code>new</code> 能考察你<span class="kw">原型链</span>、<span class="kw">this 绑定</span>、<span class="kw">构造函数返回值处理</span>的综合能力。
+      </p>
+
+      <p class="s-desc">
+        <strong>new 操作符的四步</strong>：<br>
+        ① 创建一个<span class="kw">空对象</span><br>
+        ② 空对象的 <code>__proto__</code> 指向构造函数的 <code>prototype</code>（原型连接）<br>
+        ③ 将 <code>this</code> 指向这个空对象，执行构造函数<br>
+        ④ 如果构造函数返回了<span class="kw">对象</span>则用它，否则返回步骤①创建的空对象
+      </p>
+      <div class="demo-area">
+        <div class="demo-code-header">
+          <span class="demo-code-filename">my-new.js</span>
+          <button class="run-btn" @click="runCode('myNew')">▶ 运行</button>
+        </div>
+        <pre class="code-block"><code>{{ snippets.myNew.code }}</code></pre>
+        <div class="output-panel" :class="{ 'has-content': snippets.myNew.output }">
+          <div class="output-label">Console Output</div>
+          <pre class="output-content">{{ snippets.myNew.output || '点击 "运行" 测试手写 new' }}</pre>
+        </div>
+      </div>
+
+      <div class="s-tip">
+        💡 <strong>面试技巧</strong>：手写 new 的核心就是 <code>Object.create(ctor.prototype)</code> 这一步。很多面试者会忘记第四步——<strong>构造函数返回对象时要优先用它</strong>。
+        记住这个口诀："创建空对象 → 连原型 → 执行构造函数 → 对象优先"。
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Section 6: 动手实验区 -->
+    <!-- ============================================================ -->
+    <section id="s6-playground" class="section-card">
+      <h2 class="s-title">六、🧪 动手实验区</h2>
       <p class="s-desc">自己改代码，验证原型链的各种行为。</p>
       <div class="demo-area">
         <div class="demo-code-header">
@@ -163,10 +199,10 @@
     </section>
 
     <!-- ============================================================ -->
-    <!-- Section 6: 面试问答 -->
+    <!-- Section 7: 面试问答 -->
     <!-- ============================================================ -->
-    <section id="s6-qa" class="section-card">
-      <h2 class="s-title">六、面试高频问答（⭐→⭐⭐⭐）</h2>
+    <section id="s7-qa" class="section-card">
+      <h2 class="s-title">七、面试高频问答（⭐→⭐⭐⭐）</h2>
       <p class="s-desc">点击问题展开答案，先思考再看解析。</p>
       <div class="qa-list">
         <div v-for="(item, idx) in questions" :key="idx" class="qa-item" :class="{ 'qa-open': openIdx === idx }">
@@ -192,8 +228,9 @@ const toc = [
   { id: 's2-instanceof',  label: 'instanceof' },
   { id: 's3-inheritance', label: '继承方式' },
   { id: 's4-class',       label: 'class 本质' },
-  { id: 's5-playground',  label: '动手实验' },
-  { id: 's6-qa',          label: '面试问答' },
+  { id: 's5-handwrite',   label: '手写 new' },
+  { id: 's6-playground',  label: '动手实验' },
+  { id: 's7-qa',          label: '面试问答' },
 ]
 
 // ─── 安全执行代码 ───
@@ -398,6 +435,59 @@ console.log('ch instanceof Child:', ch instanceof Child)
 console.log('ch instanceof Parent:', ch instanceof Parent)`,
     output: '',
   },
+  myNew: {
+    code: `// ===== 手写 new 操作符 =====
+function myNew(ctor, ...args) {
+  // 第 1-2 步：创建空对象，原型连接到 ctor.prototype
+  const obj = Object.create(ctor.prototype)
+
+  // 第 3 步：执行构造函数，this 指向 obj
+  const result = ctor.apply(obj, args)
+
+  // 第 4 步：如果构造函数返回了对象，优先用它
+  // 否则返回创建的新对象
+  return (result !== null && typeof result === 'object')
+    ? result
+    : obj
+}
+
+// ===== 测试 =====
+function Person(name, age) {
+  this.name = name
+  this.age = age
+  // 默认不返回，会使用创建的新对象
+}
+
+Person.prototype.sayHi = function() {
+  console.log('你好，我是 ' + this.name + '，' + this.age + '岁')
+}
+
+const p1 = myNew(Person, '张三', 25)
+console.log('p1.name:', p1.name)       // 张三
+console.log('p1.age:', p1.age)         // 25
+console.log('instanceof:', p1 instanceof Person)  // true
+p1.sayHi()  // 你好，我是张三，25岁
+
+// 测试：构造函数返回对象的情况
+function Badge(name) {
+  this.name = name
+  return { custom: true }  // 返回一个对象
+}
+const b = myNew(Badge, '测试')
+console.log('\\n返回对象测试:')
+console.log('b.custom:', b.custom)     // true（优先使用返回的对象）
+console.log('b.name:', b.name)         // undefined（name 被丢弃）
+
+// 测试：构造函数返回原始值
+function Badge2(name) {
+  this.name = name
+  return 123  // 原始值——被忽略
+}
+const b2 = myNew(Badge2, '测试2')
+console.log('\\n返回原始值测试:')
+console.log('b2.name:', b2.name)       // 测试2（原始值被忽略）`,
+    output: '',
+  },
   playground: {
     code: `// 试试自己验证原型链！
 function Person(name) {
@@ -504,6 +594,11 @@ function loadHint(idx: number) {
 const openIdx = ref(-1)
 const questions = [
   {
+    level: 2,
+    q: 'new 操作符执行时内部做了什么？手写一个 new。',
+    a: '<strong>new 的四步</strong>：<br><br>① <strong>创建空对象</strong><br>② <strong>原型连接</strong>：空对象的 <code>__proto__</code> 指向构造函数的 <code>prototype</code><br>③ <strong>执行构造函数</strong>：<code>this</code> 指向新对象<br>④ <strong>判断返回值</strong>：如果构造函数返回了对象则用它，否则返回新对象<br><br><strong>手写实现</strong>：<br><code>function myNew(ctor, ...args) {</code><br><code>&nbsp;&nbsp;const obj = Object.create(ctor.prototype)</code><br><code>&nbsp;&nbsp;const result = ctor.apply(obj, args)</code><br><code>&nbsp;&nbsp;return (result !== null && typeof result === "object")</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;? result : obj</code><br><code>}</code><br><br><strong>面试关键点</strong>：<br>· 用 <code>Object.create()</code> 而非 <code>{}</code> 来创建对象（保持原型链）<br>· 记得处理构造函数返回对象的情况<br>· 构造函数返回原始值（如 <code>return 123</code>）会被忽略<br><br><strong>口诀</strong>："建空对象 → 连原型 → 执行构造 → 对象优先"。',
+  },
+  {
     level: 1,
     q: '__proto__ 和 prototype 有什么区别？',
     a: '<strong>面试回答框架</strong>：先说定义，再说关系。<br><br><code>__proto__</code> 是每个<strong>对象</strong>都有的属性，指向创建它的构造函数的 <code>prototype</code>。<br><code>prototype</code> 是<strong>函数</strong>才有的属性，存放所有实例共享的方法。<br><br><strong>关键关系</strong>：<br>① <code>new Foo()</code> 创建的实例的 <code>__proto__</code> === <code>Foo.prototype</code><br>② <code>Foo.prototype.constructor</code> === <code>Foo</code><br>③ 函数本身也是对象，所以 <code>Foo.__proto__ === Function.prototype</code><br><br><strong>口诀</strong>：实例的 <code>__proto__</code> 指向构造函数的 <code>prototype</code>。',
@@ -542,6 +637,7 @@ const questions = [
 .section-card { background: var(--color-background-soft); border: 1px solid var(--color-border); border-radius: 12px; padding: 1.8rem; margin-bottom: 1.5rem; }
 .s-title { font-size: 1.3rem; color: var(--color-heading); margin-bottom: 0.5rem; }
 .s-badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #8b5cf622; color: #8b5cf6; vertical-align: middle; margin-left: 8px; }
+.s-badge-sm { display: inline-block; font-size: 0.65rem; font-weight: 600; padding: 1px 6px; border-radius: 8px; background: #8b5cf622; color: #8b5cf6; vertical-align: middle; margin-left: 4px; }
 .s-subtitle { font-size: 1.05rem; color: var(--color-heading); margin: 1.5rem 0 0.5rem; padding-left: 0.5rem; border-left: 3px solid hsla(160, 100%, 37%, 1); }
 .s-desc { font-size: 0.92rem; line-height: 1.6; color: var(--color-text); opacity: 0.8; margin-bottom: 0.8rem; }
 .s-desc code { background: color-mix(in srgb, var(--color-border) 40%, transparent); padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }

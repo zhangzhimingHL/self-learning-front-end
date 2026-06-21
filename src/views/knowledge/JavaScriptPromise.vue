@@ -1230,7 +1230,7 @@ function runCode(key: string) {
   }
 
   // 异步 + setTimeout 的代码段
-  const delayKeys = ['promiseAll', 'promiseAllSettled', 'promiseRace', 'promiseAny', 'serialVsParallel', 'awaitMechanics']
+  const delayKeys = ['resolveReject', 'constructor', 'thenCatchFinally', 'promiseAll', 'promiseAllSettled', 'promiseRace', 'promiseAny', 'serialVsParallel', 'awaitMechanics']
   if (delayKeys.includes(key)) {
     runAsync(() => {
       const func = new Function('Promise', 'setTimeout', snippets[key].code)

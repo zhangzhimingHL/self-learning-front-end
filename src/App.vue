@@ -1,15 +1,33 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import { NConfigProvider, zhCN, darkTheme } from 'naive-ui'
+import { ref, watchEffect } from 'vue'
+
+const isDark = ref(false)
+const theme = ref<typeof darkTheme | null>(null)
+function toggleTheme() {
+  isDark.value = !isDark.value
+  theme.value = isDark.value ? darkTheme : null
+  document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : 'light')
+}
+
+// 初始化：读取系统偏好
+if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  isDark.value = true
+  theme.value = darkTheme
+  document.documentElement.setAttribute('data-theme', 'dark')
+}
 </script>
 
 <template>
-  <div class="app-layout">
-    <aside class="sidebar">
-      <div class="logo">
-        <router-link to="/">
-          <h2>📘 前端复习路线</h2>
-        </router-link>
-      </div>
+  <NConfigProvider :locale="zhCN" :theme="theme">
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="logo">
+          <router-link to="/">
+            <h2>📘 前端复习路线</h2>
+          </router-link>
+        </div>
       <nav class="nav">
         <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">
           <span class="nav-icon">🏠</span>
@@ -37,6 +55,14 @@ import { RouterLink, RouterView } from 'vue-router'
         <router-link to="/javascript-promise" class="nav-item">
           <span class="nav-icon">🤝</span>
           <span>Promise 与异步</span>
+        </router-link>
+        <router-link to="/javascript-deep-clone" class="nav-item">
+          <span class="nav-icon">📋</span>
+          <span>深拷贝</span>
+        </router-link>
+        <router-link to="/javascript-type-coercion" class="nav-item">
+          <span class="nav-icon">🔄</span>
+          <span>类型转换</span>
         </router-link>
 
         <!-- Vue 3 深度 -->
@@ -136,12 +162,18 @@ import { RouterLink, RouterView } from 'vue-router'
           <span>关于</span>
         </router-link>
       </nav>
+      <div class="theme-row">
+        <button class="theme-btn" @click="toggleTheme">
+          {{ isDark ? '☀️ 亮色' : '🌙 暗色' }}
+        </button>
+      </div>
     </aside>
 
     <main class="main-content">
       <router-view />
     </main>
   </div>
+  </NConfigProvider>
 </template>
 
 <style scoped>
@@ -160,6 +192,8 @@ import { RouterLink, RouterView } from 'vue-router'
   left: 0;
   bottom: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .logo {
@@ -182,6 +216,7 @@ import { RouterLink, RouterView } from 'vue-router'
   display: flex;
   flex-direction: column;
   gap: 2px;
+  flex: 1;
 }
 
 .nav-group-title {
@@ -230,5 +265,46 @@ import { RouterLink, RouterView } from 'vue-router'
   margin-left: 220px;
   padding: 2rem;
   max-width: calc(100vw - 220px);
+}
+
+.theme-row {
+  padding: 0.5rem 1.2rem;
+}
+
+.theme-btn {
+  width: 100%;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background-soft);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.theme-btn:hover {
+  border-color: hsla(160, 100%, 37%, 1);
+  color: hsla(160, 100%, 37%, 1);
+}
+</style>
+
+<style>
+/* 全局暗色模式 */
+[data-theme="dark"] {
+  --color-background: #1a1a2e !important;
+  --color-background-soft: #1e1e32 !important;
+  --color-background-mute: #16162a !important;
+  --color-border: #2a2a4a !important;
+  --color-heading: #e0e0f0 !important;
+  --color-text: #c0c0d0 !important;
+}
+[data-theme="dark"] .code-block,
+[data-theme="dark"] .code-editor,
+[data-theme="dark"] .code-block-sm {
+  background: #0d0d1a !important;
+}
+[data-theme="dark"] .output-panel {
+  background: #0d0d1a !important;
 }
 </style>

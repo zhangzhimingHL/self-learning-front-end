@@ -173,6 +173,50 @@
       <div class="s-tip">
         💡 <strong>面试高频</strong>：闭包是 JS 面试<strong>最核心</strong>的考点之一。常见考题——"什么是闭包"、"闭包的优缺点"、"循环闭包问题及解决方案"、"用闭包实现私有变量"、"实现 add(1)(2)(3)"。一定要理解闭包的底层原理：作用域链 + 函数对象持有了外层作用域的引用。
       </div>
+
+      <!-- 2.6 闭包应用：防抖 -->
+      <h3 class="s-subtitle">⑥ 闭包应用：防抖（Debounce）</h3>
+      <p class="s-desc">
+        <span class="kw">字节跳动</span> <span class="s-badge-sm">高频</span>
+        <span class="kw">腾讯</span> <span class="s-badge-sm">高频</span>
+        <span class="kw">阿里巴巴</span> <span class="s-badge-sm">中频</span><br>
+        防抖的核心就是闭包：<span class="kw">在闭包中保存 timer 变量</span>，每次调用时先清除上一次的定时器再重新设置。
+        触发 <code>fn()</code> 后等待 N 毫秒才执行，如果 N 毫秒内又被触发则重新计时。
+      </p>
+      <div class="demo-area">
+        <div class="demo-code-header">
+          <span class="demo-code-filename">debounce.js</span>
+          <button class="run-btn" @click="runCode('debounce')">▶ 运行</button>
+        </div>
+        <pre class="code-block"><code>{{ snippets.debounce.code }}</code></pre>
+        <div class="output-panel" :class="{ 'has-content': snippets.debounce.output }">
+          <div class="output-label">Console Output</div>
+          <pre class="output-content">{{ snippets.debounce.output || '点击 "运行" 查看防抖实现' }}</pre>
+        </div>
+      </div>
+
+      <!-- 2.7 闭包应用：节流 -->
+      <h3 class="s-subtitle">⑦ 闭包应用：节流（Throttle）</h3>
+      <p class="s-desc">
+        节流也是闭包的典型应用：在闭包中保存 <span class="kw">上次执行时间</span>（或 <span class="kw">timer</span>），每次触发时判断是否达到间隔时间。
+        保证在 N 秒内只执行一次，即使被连续触发。
+      </p>
+      <div class="demo-area">
+        <div class="demo-code-header">
+          <span class="demo-code-filename">throttle.js</span>
+          <button class="run-btn" @click="runCode('throttle')">▶ 运行</button>
+        </div>
+        <pre class="code-block"><code>{{ snippets.throttle.code }}</code></pre>
+        <div class="output-panel" :class="{ 'has-content': snippets.throttle.output }">
+          <div class="output-label">Console Output</div>
+          <pre class="output-content">{{ snippets.throttle.output || '点击 "运行" 查看节流实现' }}</pre>
+        </div>
+      </div>
+
+      <div class="s-tip">
+        💡 <strong>面试加分</strong>：防抖和节流的核心区别是——<span class="kw">防抖是等用户停下来才执行</span>（适合输入搜索），<span class="kw">节流是限制执行频率</span>（适合滚动事件）。
+        两者都是闭包的经典应用——在闭包中保存 timer/时间戳。如果面试官让你手写，先写出基础版，再主动加上 <code>immediate</code> 参数或 <code>cancel</code> 方法就是满分。
+      </div>
     </section>
 
     <!-- ============================================================ -->
@@ -576,6 +620,108 @@ console.log('闭包持有 large 引用，无法释放！')
 console.log('解决办法: 用完后将闭包置为 null')`,
     output: '',
   },
+  debounce: {
+    code: `// ===== 防抖（Debounce） =====
+// 闭包保存 timer，连续触发只执行最后一次
+function debounce(fn, delay, immediate = false) {
+  let timer = null  // 闭包变量
+
+  const debounced = function(...args) {
+    const callNow = immediate && !timer
+
+    clearTimeout(timer)  // 每次触发清除上次的定时器
+
+    timer = setTimeout(() => {
+      timer = null
+      if (!immediate) fn.apply(this, args)
+    }, delay)
+
+    if (callNow) fn.apply(this, args)
+  }
+
+  // 添加取消功能
+  debounced.cancel = function() {
+    clearTimeout(timer)
+    timer = null
+  }
+
+  return debounced
+}
+
+// 模拟连续触发
+console.log('=== 防抖测试（delay=300ms, immediate=true） ===')
+const log = debounce(function(msg) {
+  console.log('执行:', msg, '| this.data:', this.data)
+}, 300, true)
+
+// 模拟连续调用
+log.call({ data: 1 }, 'A')  // immediate 立即执行
+log.call({ data: 2 }, 'B')  // 被取消
+log.call({ data: 3 }, 'C')  // 被取消
+// 300ms 后 "D" 是最后一次，被执行
+setTimeout(() => log.call({ data: 4 }, 'E'), 400)
+// 额外：1200ms 后再次执行
+setTimeout(() => {
+  log.call({ data: 5 }, 'F')  // immediate 再次立即执行
+}, 1200)
+
+console.log('注意：防抖的本质就是闭包保存 timer')
+console.log('每次调用先清除再设置——只有"最后一个人"能执行')`,
+    output: '',
+  },
+  throttle: {
+    code: `// ===== 节流（Throttle） =====
+// 闭包保存 last（上次执行时间），保证 N 秒内只执行一次
+
+// 时间戳版（立即执行）
+function throttle(fn, delay) {
+  let last = 0  // 闭包变量：上次执行时间
+
+  return function(...args) {
+    const now = Date.now()
+    if (now - last >= delay) {
+      last = now
+      fn.apply(this, args)
+    }
+    // 如果时间没到，什么都不做
+  }
+}
+
+// 定时器版（延迟执行）
+function throttleTimer(fn, delay) {
+  let timer = null  // 闭包变量
+
+  return function(...args) {
+    if (!timer) {
+      timer = setTimeout(() => {
+        timer = null
+        fn.apply(this, args)
+      }, delay)
+    }
+    // 如果 timer 还在，说明还没到时间，跳过
+  }
+}
+
+// 测试时间戳版
+console.log('=== 节流测试（delay=500ms） ===')
+let count = 0
+const throttled = throttle(function() {
+  console.log('执行次数:', ++count, '| time:', Date.now())
+}, 500)
+
+// 模拟连续快速触发
+const start = Date.now()
+const interval = setInterval(() => {
+  throttled()
+  if (Date.now() - start > 2000) {
+    clearInterval(interval)
+    console.log('\\n结论：节流保证每隔 500ms 最多执行一次')
+    console.log('防抖和节流的共同点：都是闭包保存状态')
+    console.log('不同点：防抖"只执行最后一次"，节流"定期执行"')
+  }
+}, 50)  // 每 50ms 触发一次`,
+    output: '',
+  },
   playground: {
     code: `// 来试试自己写闭包！
 // 例：实现一个点赞计数器
@@ -691,6 +837,27 @@ function runCode(key: string) {
 
   const snippet = snippets[key]
   if (!snippet) return
+
+  // 异步代码（含 setTimeout 的）
+  const asyncKeys = ['debounce', 'throttle']
+  if (asyncKeys.includes(key)) {
+    snippet.output = '⏳ 执行中...'
+    const captured: string[] = []
+    const origLog = console.log
+    console.log = (...args: unknown[]) => captured.push(args.map(a => formatArg(a)).join(' '))
+    setTimeout(() => {
+      console.log = origLog
+      snippet.output = captured.join('\n')
+    }, 600)
+    try {
+      const func = new Function('setTimeout', 'clearInterval', 'setInterval', snippet.code)
+      func(setTimeout, clearInterval, setInterval)
+    } catch (e: unknown) {
+      console.log = origLog
+      snippet.output = '💥 错误: ' + (e instanceof Error ? e.message : String(e))
+    }
+    return
+  }
 
   const lines = captureConsole(() => {
     const func = new Function(snippet.code)
@@ -837,12 +1004,12 @@ const questions = [
   },
   {
     level: 2,
-    q: '手写一个防抖函数（debounce），说说它和闭包的关系。',
+    q: '手写一个防抖函数（debounce），说说它和闭包的关系。【字节/腾讯 高频】',
     a: '<strong>防抖</strong>：在事件被触发 N 秒后再执行回调，如果 N 秒内又被触发，则重新计时。<br><br><code>function debounce(fn, delay) {</code><br><code>&nbsp;&nbsp;let timer = null  // 闭包变量</code><br><br><code>&nbsp;&nbsp;return function(...args) {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;clearTimeout(timer)  // 每次调用清除上一次的定时器</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;timer = setTimeout(() => {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fn.apply(this, args)</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;}, delay)</code><br><code>&nbsp;&nbsp;}</code><br><code>}</code><br><br><strong>和闭包的关系</strong>：<code>timer</code> 变量被内部函数引用，每次调用返回的函数时，都能访问到上一次的 <code>timer</code> 值。这就是闭包的典型应用——<strong>保存状态</strong>。<br><br><strong>面试技巧</strong>：说完实现后加一句"防抖的核心是闭包保存定时器 ID，每次触发先清除再重新计时"，面试官会点头。',
   },
   {
     level: 2,
-    q: '手写一个节流函数（throttle），它和防抖有什么区别？',
+    q: '手写一个节流函数（throttle），它和防抖有什么区别？【字节/腾讯 高频】',
     a: '<strong>节流</strong>：连续触发事件时，保证在 N 秒内<strong>只执行一次</strong>回调。<br><br><strong>时间戳版</strong>（立即执行）：<br><code>function throttle(fn, delay) {</code><br><code>&nbsp;&nbsp;let last = 0  // 闭包保存上次执行时间</code><br><br><code>&nbsp;&nbsp;return function(...args) {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;const now = Date.now()</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;if (now - last &gt;= delay) {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last = now</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fn.apply(this, args)</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code><br><code>&nbsp;&nbsp;}</code><br><code>}</code><br><br><strong>定时器版</strong>（延迟执行）：<br><code>function throttle(fn, delay) {</code><br><code>&nbsp;&nbsp;let timer = null</code><br><br><code>&nbsp;&nbsp;return function(...args) {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;if (!timer) {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timer = setTimeout(() => {</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;timer = null</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fn.apply(this, args)</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}, delay)</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;}</code><br><code>&nbsp;&nbsp;}</code><br><code>}</code><br><br><strong>和防抖的区别</strong>：<br>· 防抖是<strong>等待空闲</strong>——连续触发只执行最后一次<br>· 节流是<strong>限制频率</strong>——连续触发也保证每隔 N 秒执行一次<br>· 防抖适合输入搜索、窗口 resize；节流适合滚动加载、鼠标移动<br><br><strong>和闭包的关系</strong>：和防抖一样，节流也是通过闭包<strong>保存持久状态</strong>（时间戳版保存 <code>last</code>，定时器版保存 <code>timer</code>）。两者本质都是"闭包 + 定时器/时间戳"的组合。',
   },
   {
@@ -938,6 +1105,17 @@ const questions = [
   color: #8b5cf6;
   vertical-align: middle;
   margin-left: 8px;
+}
+.s-badge-sm {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: #8b5cf622;
+  color: #8b5cf6;
+  vertical-align: middle;
+  margin-left: 4px;
 }
 .s-subtitle {
   font-size: 1.05rem;
