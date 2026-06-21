@@ -46,6 +46,22 @@ import { RouterLink, RouterView } from 'vue-router'
           <span class="nav-icon">🔄</span>
           <span>类型转换</span>
         </router-link>
+        <router-link to="/javascript-handwriting" class="nav-item">
+          <span class="nav-icon">✍️</span>
+          <span>手写题合集</span>
+        </router-link>
+        <router-link to="/javascript-array-methods" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span>数组方法</span>
+        </router-link>
+        <router-link to="/javascript-generator-module" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span>Generator/模块化</span>
+        </router-link>
+        <router-link to="/javascript-advanced" class="nav-item">
+          <span class="nav-icon">🔢</span>
+          <span>进阶运算</span>
+        </router-link>
 
         <!-- Vue 3 深度 -->
         <div class="nav-group-title">Vue 3 深度</div>

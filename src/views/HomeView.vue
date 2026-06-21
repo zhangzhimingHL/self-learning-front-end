@@ -108,6 +108,10 @@ const groups: RoadmapGroup[] = [
       { icon: '🤝', title: 'Promise 与异步', desc: 'Promise A+、async/await、手写 Promise.all/race', path: '/javascript-promise' },
       { icon: '📋', title: '深拷贝', desc: '浅深对比、JSON 局限、手写递归深拷贝、循环引用 WeakMap', path: '/javascript-deep-clone' },
       { icon: '🔄', title: '类型转换', desc: '显式/隐式转换、== vs ===、ToPrimitive、经典面试题', path: '/javascript-type-coercion' },
+      { icon: '✍️', title: '手写题合集', desc: 'EventEmitter、并发调度器、防抖节流完整版', path: '/javascript-handwriting' },
+      { icon: '📊', title: '数组方法', desc: '手写 reduce/map/filter、去重、扁平化、树形结构', path: '/javascript-array-methods' },
+      { icon: '⚙️', title: 'Generator/模块化', desc: '可迭代协议、Generator 自动执行器、ESM vs CJS', path: '/javascript-generator-module' },
+      { icon: '🔢', title: '进阶运算', desc: '大数相加、版本号对比、LRU 缓存', path: '/javascript-advanced' },
     ],
   },
   {

@@ -46,6 +46,26 @@ const router = createRouter({
       name: 'javascript-promise',
       component: () => import('../views/knowledge/JavaScriptPromise.vue'),
     },
+    {
+      path: '/javascript-handwriting',
+      name: 'javascript-handwriting',
+      component: () => import('../views/knowledge/JavaScriptHandwriting.vue'),
+    },
+    {
+      path: '/javascript-array-methods',
+      name: 'javascript-array-methods',
+      component: () => import('../views/knowledge/JavaScriptArrayMethods.vue'),
+    },
+    {
+      path: '/javascript-generator-module',
+      name: 'javascript-generator-module',
+      component: () => import('../views/knowledge/JavaScriptGeneratorModule.vue'),
+    },
+    {
+      path: '/javascript-advanced',
+      name: 'javascript-advanced',
+      component: () => import('../views/knowledge/JavaScriptAdvanced.vue'),
+    },
 
     // ─── Vue 3 深度 ───
     {

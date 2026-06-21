@@ -7,3 +7,7 @@
 - [关键字高亮](keyword_highlight.md) — 页面设计时核心关键字做视觉高亮，防止走神
 - [不跳过知识点](no_skip_knowledge.md) — 陌生概念要通过 tooltip / 展开方式提供解析，不让用户卡住
 - [内容标准：面试驱动](content_standard_interview.md) — 所有知识点以大厂真题驱动，含可运行Demo + 手写实现 + 面试Q&A
+- [Token用量预警](token_warning.md) — 大操作前主动提醒，防止token飞速消耗
+- [先手写再给答案](handwrite_first.md) — 关键知识点要求用户先手写，不直接给实现
+- [内容原子化](atomic_content.md) — 每次只输出一个核心点，信息量少而精，防止走神
+- [双目录同步](sync_memory_dirs.md) — 全局与项目根目录两套 memory 必须同步更新
