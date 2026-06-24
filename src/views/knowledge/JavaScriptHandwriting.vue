@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="js-page">
     <header class="hero">
       <h1>核心手写题合集</h1>
@@ -313,7 +313,6 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import DefTooltip from '@/components/DefTooltip.vue'
 
 const toc = [
   { id: 's1-emitter',      label: 'EventEmitter' },
@@ -345,21 +344,51 @@ function formatArg(arg: unknown): string {
   return String(arg)
 }
 
-function runAsync(fn: () => void, snippetKey: string) {
+function runAsync(snippetKey: string) {
   const snippet = snippets[snippetKey]
   if (!snippet) return
   snippet.output = '⏳ 执行中...'
   const captured: string[] = []
   const origLog = console.log
+  const origSetTimeout = window.setTimeout.bind(window)
+  const origSetInterval = window.setInterval.bind(window)
+
   console.log = (...args: unknown[]) => captured.push(args.map(a => formatArg(a)).join(' '))
-  setTimeout(() => {
+
+  let pendingCount = 0
+  let settled = false
+
+  function flush() {
+    if (settled) return
+    settled = true
     console.log = origLog
-    snippet.output = captured.join('\n')
-  }, 500)
-  try { fn() } catch (e: unknown) {
+    snippet.output = captured.length ? captured.join('\n') : '(无输出)'
+  }
+
+  const wrappedSetTimeout = ((fn: (...args: unknown[]) => void, ms?: number, ...args: unknown[]) => {
+    pendingCount++
+    return origSetTimeout(() => {
+      fn(...args)
+      pendingCount--
+      if (pendingCount <= 0) origSetTimeout(flush, 50)
+    }, ms)
+  }) as unknown as typeof setTimeout
+
+  const wrappedSetInterval = ((fn: (...args: unknown[]) => void, ms?: number, ...args: unknown[]) => {
+    return origSetInterval(() => fn(...args), ms)
+  }) as unknown as typeof setInterval
+
+  try {
+    const func = new Function('Promise', 'setTimeout', 'setInterval', 'globalThis', snippet.code)
+    func(Promise, wrappedSetTimeout, wrappedSetInterval, globalThis)
+  } catch (e: unknown) {
     console.log = origLog
     snippet.output = '💥 错误: ' + (e instanceof Error ? e.message : String(e))
+    return
   }
+
+  if (pendingCount <= 0) origSetTimeout(flush, 50)
+  origSetTimeout(flush, 3000)
 }
 
 interface Snippet { code: string; output: string }
@@ -980,21 +1009,44 @@ bus.emit('test', 'Hello Handwriting!')`,
 // ─── 运行代码 ───
 function runCode(key: string) {
   if (key === 'playground') {
-    snippets.playground.output = ''
     const captured: string[] = []
+    const runId = ++playgroundRunId
     const origLog = console.log
+    const origSetTimeout = window.setTimeout.bind(window)
+
     console.log = (...args: unknown[]) => captured.push(args.map(a => formatArg(a)).join(' '))
-    try {
-      const func = new Function('Promise', 'setTimeout', 'setInterval', playgroundCode.value)
-      func(Promise, setTimeout, setInterval)
-    } catch (e: unknown) {
-      captured.push('💥 错误: ' + (e instanceof Error ? e.message : String(e)))
-    }
-    setTimeout(() => {
+
+    let pendingCount = 0
+    let settled = false
+
+    function flush() {
+      if (settled || runId !== playgroundRunId) return
+      settled = true
       console.log = origLog
-      if (captured.length) snippets.playground.output = captured.join('\n')
-    }, 200)
-    snippets.playground.output = '⏳ 执行中...\n' + captured.join('\n')
+      snippets.playground.output = captured.length ? captured.join('\n') : '(无输出)'
+    }
+
+    const wrappedSetTimeout = ((fn: (...args: unknown[]) => void, ms?: number, ...args: unknown[]) => {
+      pendingCount++
+      return origSetTimeout(() => {
+        fn(...args)
+        pendingCount--
+        if (pendingCount <= 0) origSetTimeout(flush, 50)
+      }, ms)
+    }) as unknown as typeof setTimeout
+
+    try {
+      const func = new Function('Promise', 'setTimeout', 'setInterval', 'globalThis', playgroundCode.value)
+      func(Promise, wrappedSetTimeout, setInterval, globalThis)
+    } catch (e: unknown) {
+      console.log = origLog
+      snippets.playground.output = '💥 错误: ' + (e instanceof Error ? e.message : String(e))
+      return
+    }
+
+    snippets.playground.output = '⏳ 执行中...'
+    if (pendingCount <= 0) origSetTimeout(flush, 50)
+    origSetTimeout(flush, 3000)
     return
   }
 
@@ -1002,10 +1054,7 @@ function runCode(key: string) {
   const asyncKeys = ['emitterDemo', 'myEmitter', 'schedulerDemo', 'myScheduler',
     'debounceThrottleDemo', 'myDebounce', 'myThrottle', 'myCallApplyBind', 'myNew']
   if (asyncKeys.includes(key)) {
-    runAsync(() => {
-      const func = new Function('Promise', 'setTimeout', 'setInterval', 'globalThis', snippets[key].code)
-      func(Promise, setTimeout, setInterval, globalThis)
-    }, key)
+    runAsync(key)
     return
   }
 
@@ -1142,6 +1191,9 @@ function loadHint(idx: number) {
   snippets.playground.output = ''
 }
 
+// ─── Run counter for playground (prevents stale flushes) ───
+let playgroundRunId = 0
+
 // ─── 面试问答 ───
 const openIdx = ref(-1)
 const questions = [
@@ -1195,14 +1247,15 @@ const questions = [
 
 <style scoped>
 .js-page { max-width: 960px; margin: 0 auto; padding-bottom: 3rem; }
-.hero { text-align: center; padding: 2.5rem 1rem 2rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem; }
+.hero { text-align: center; padding: 2rem 1rem 2rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem; }
 .hero h1 { font-size: 1.8rem; color: var(--color-heading); margin-bottom: 0.5rem; }
 .hero-sub { color: var(--color-text); opacity: 0.6; font-size: 0.95rem; }
 .kw { color: hsla(160, 100%, 37%, 1); font-weight: 600; }
 .toc { display: flex; gap: 6px; flex-wrap: wrap; padding: 0.8rem 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border); position: sticky; top: 0; background: var(--color-background); z-index: 10; }
 .toc-link { font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; background: var(--color-background-soft); color: var(--color-text); text-decoration: none; border: 1px solid var(--color-border); transition: all 0.2s; }
 .toc-link:hover { background: var(--color-background-mute); color: var(--color-heading); border-color: var(--color-heading); }
-.section-card { background: var(--color-background-soft); border: 1px solid var(--color-border); border-radius: 12px; padding: 1.8rem; margin-bottom: 1.5rem; }
+.section-card { background: var(--color-background-soft); border: 1px solid var(--color-border); border-radius: 12px; padding: 1.8rem; margin-bottom: 1.5rem; transition: box-shadow 0.2s; }
+.section-card:hover { box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); }
 .s-title { font-size: 1.3rem; color: var(--color-heading); margin-bottom: 0.5rem; }
 .s-badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #8b5cf622; color: #8b5cf6; vertical-align: middle; margin-left: 8px; }
 .s-subtitle { font-size: 1.05rem; color: var(--color-heading); margin: 1.5rem 0 0.5rem; padding-left: 0.5rem; border-left: 3px solid hsla(160, 100%, 37%, 1); }
@@ -1240,7 +1293,7 @@ const questions = [
 .output-label { font-size: 0.72rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
 .output-content { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.82rem; color: #a0e0a0; white-space: pre-wrap; margin: 0; line-height: 1.5; min-height: 1.2em; }
 .output-panel.has-content .output-content { color: #a0e0a0; }
-.output-panel:not(.has-content) .output-content { color: #666; font-style: italic; }
+.output-panel:not(.has-content) .output-content { color: var(--color-text); opacity: 0.4; font-style: italic; }
 .playground-hints { margin-top: 1rem; }
 .playground-hints p { font-size: 0.85rem; margin-bottom: 8px; color: var(--color-heading); }
 .hint-chips { display: flex; gap: 8px; flex-wrap: wrap; }
