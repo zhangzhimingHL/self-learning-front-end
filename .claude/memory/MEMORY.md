@@ -11,3 +11,4 @@
 - [先手写再给答案](handwrite_first.md) — 关键知识点要求用户先手写，不直接给实现
 - [内容原子化](atomic_content.md) — 每次只输出一个核心点，信息量少而精，防止走神
 - [双目录同步](sync_memory_dirs.md) — 全局与项目根目录两套 memory 必须同步更新
+- [学习路线图](learning_roadmap.md) — 目标15k+前端学习路线，5个阶段知识点规划

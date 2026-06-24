@@ -118,7 +118,7 @@ const groups: RoadmapGroup[] = [
     icon: '💚',
     title: 'Vue 3 深度',
     items: [
-      { icon: '⚡', title: '响应式原理', desc: 'Proxy、依赖收集、ref/reactive/computed 实现', path: '/vue-reactivity' },
+      { icon: '⚡', title: '响应式原理', desc: 'Proxy + Reflect、依赖收集、ref/reactive/computed 实现', path: '/vue-reactivity' },
       { icon: '🖼️', title: '虚拟 DOM / diff', desc: 'VDOM 结构、patch 流程、双端 diff、静态标记', path: '/vue-vdom' },
       { icon: '🧩', title: '组件设计模式', desc: 'props/emit/slot、provide/inject、Composables', path: '/vue-component-patterns' },
       { icon: '📦', title: 'Pinia 状态管理', desc: 'Pinia vs Vuex、store 模式、插件系统、源码简析', path: '/vue-pinia' },

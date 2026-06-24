@@ -131,9 +131,9 @@
         </div>
       </div>
 
-      <h3 class="s-subtitle">③ 完美版：处理 Map/Set/Date/RegExp/Symbol</h3>
+      <h3 class="s-subtitle">③ 完美版：处理 Map/Set/Date/RegExp/Symbol + 保原型 + 保 getter/setter</h3>
       <p class="s-desc">
-        面试满分版本：处理所有特殊类型 + 循环引用 + Symbol 作为 key。
+        面试满分版本：处理所有特殊类型 + 循环引用 + Symbol key + Error + Object.create(null) + <span class="kw">getter/setter</span> + 原型保留。
       </p>
       <div class="demo-area">
         <div class="demo-code-header">
@@ -149,8 +149,8 @@
 
       <div class="s-tip">
         💡 <strong>面试回答框架</strong>：当被问到"实现一个深拷贝函数"时：<br>
-        ① 先说浅拷贝的问题（引用共享）→ ② 说 JSON 方案的局限性（5点）→ ③ 给出手写递归方案（用 WeakMap 解决循环引用）→ ④ 补充特殊类型处理。
-        按照这个顺序讲，面试官会认为你思路清晰、考虑全面。
+        ① 先说浅拷贝的问题（引用共享）→ ② 说 JSON 方案的局限性（5点）→ ③ 给出手写递归方案（用 WeakMap 解决循环引用）→ ④ 补充特殊类型处理（Date/RegExp/Map/Set/Error）→ ⑤ 进阶：<span class="kw">Object.create 保原型</span> + <span class="kw">描述符保 getter/setter</span>。
+        按照这个顺序讲，面试官会认为你思路清晰、考虑全面。第⑤点是区分"优秀"和"卓越"的关键。
       </div>
     </section>
 
@@ -329,11 +329,11 @@ console.log('原对象:', obj4)
 console.log('JSON后:', JSON.parse(JSON.stringify(obj4)))
 
 console.log('\\n=== 局限 5: 循环引用报错 ===')
-const obj5: any = { name: '循环' }
+const obj5 = { name: '循环' }
 obj5.self = obj5
 try {
   JSON.parse(JSON.stringify(obj5))
-} catch (e: any) {
+} catch (e) {
   console.log('报错:', e.message)  // Converting circular structure to JSON
 }`,
     output: '',
@@ -401,7 +401,7 @@ function deepCloneWM(obj, hash = new WeakMap()) {
 }
 
 // 测试：循环引用
-const obj: any = { name: '循环测试' }
+const obj = { name: '循环测试' }
 obj.self = obj        // obj.self 指向自己
 
 const cloned = deepCloneWM(obj)
@@ -420,20 +420,15 @@ console.log('3. 如果是大对象深拷贝，WeakMap 更省内存')`,
     output: '',
   },
   deepClonePerfect: {
-    code: `// 完美版深拷贝（面试满分答案）
+    code: `// 完美版深拷贝（真正保原型 + 保 getter/setter）
 function deepClone(obj, hash = new WeakMap()) {
-  // null 或非对象
   if (obj === null || typeof obj !== 'object') return obj
-
-  // 处理循环引用
   if (hash.has(obj)) return hash.get(obj)
 
   // 处理 Date
   if (obj instanceof Date) return new Date(obj)
-
   // 处理 RegExp
   if (obj instanceof RegExp) return new RegExp(obj.source, obj.flags)
-
   // 处理 Map
   if (obj instanceof Map) {
     const map = new Map()
@@ -441,7 +436,6 @@ function deepClone(obj, hash = new WeakMap()) {
     obj.forEach((val, key) => map.set(key, deepClone(val, hash)))
     return map
   }
-
   // 处理 Set
   if (obj instanceof Set) {
     const set = new Set()
@@ -449,52 +443,76 @@ function deepClone(obj, hash = new WeakMap()) {
     obj.forEach(val => set.add(deepClone(val, hash)))
     return set
   }
+  // 处理 Error（message/stack/cause 都是自身属性）
+  if (obj instanceof Error) {
+    const err = new obj.constructor()
+    for (const key of Object.getOwnPropertyNames(obj)) {
+      Object.defineProperty(err, key, Object.getOwnPropertyDescriptor(obj, key))
+    }
+    return err
+  }
 
-  // 数组或普通对象（用 constructor 保持原型）
-  const result = new obj.constructor()
+  // 保原型：用 Object.create 代替 new constructor
+  const result = Object.create(Object.getPrototypeOf(obj))
   hash.set(obj, result)
 
-  // 用 Reflect.ownKeys 遍历（包含 Symbol 类型的 key）
-  Reflect.ownKeys(obj).forEach(key => {
-    result[key] = deepClone(obj[key], hash)
-  })
+  // 保 getter/setter：用属性描述符拷贝，不是简单赋值
+  const descriptors = Object.getOwnPropertyDescriptors(obj)
+  for (const key of Reflect.ownKeys(descriptors)) {
+    const desc = descriptors[key]
+    if (desc.hasOwnProperty('value')) {
+      desc.value = deepClone(desc.value, hash)
+    }
+    // 访问器属性（getter/setter）：保持原函数，不拷贝
+  }
+  Object.defineProperties(result, descriptors)
 
   return result
 }
 
 // ===== 全面测试 =====
-const original: any = {
-  name: '完美版',
+const original = {
+  name: '最终版',
   num: 42,
-  flag: true,
   arr: [1, 2, { nested: 'ok' }],
   address: { city: '北京', zip: 100000 },
   birth: new Date('2000-06-01'),
   pattern: /test/gi,
   map: new Map([['key1', 'value1'], ['key2', { deep: 'map-value' }]]),
-  set: new Set([1, 2, 3, { deep: 'set-value' }]),
-  [Symbol('secret')]: 'symbol-value'  // Symbol key
+  set: new Set([1, 2, { deep: 'set-value' }]),
+  [Symbol('secret')]: 'symbol-value',
+  error: new Error('出错了'),
+  get city() { return this.address.city },
 }
-
-// 加循环引用
 original.self = original
+
+// 无原型的对象
+const nullProto = Object.create(null)
+nullProto.data = 42
+original.nullProto = nullProto
 
 const cloned = deepClone(original)
 
-console.log('=== 深拷贝测试结果 ===')
+console.log('=== 完美版测试 ===')
 console.log('name:', cloned.name)
-console.log('address.city:', cloned.address.city)
-console.log('birth:', cloned.birth, 'isDate:', cloned.birth instanceof Date)
-console.log('pattern:', cloned.pattern, 'isRegExp:', cloned.pattern instanceof RegExp)
-console.log('map:', cloned.map, 'Map?', cloned.map instanceof Map)
-console.log('set:', cloned.set, 'Set?', cloned.set instanceof Set)
+console.log('birth isDate:', cloned.birth instanceof Date)
+console.log('pattern isRegExp:', cloned.pattern instanceof RegExp)
+console.log('map 内容:', cloned.map.get('key1'))
 console.log('循环引用:', cloned.self === cloned)
+console.log('Symbol key 保留:', Object.getOwnPropertySymbols(cloned).length > 0)
+console.log('nullProto 无原型:', Object.getPrototypeOf(cloned.nullProto) === null)
+console.log('Error 保留:', cloned.error instanceof Error, cloned.error.message)
+
+// 验证 getter 保住了
+console.log('getter city:', cloned.city)
+// 改深层验证 getter 跟随
+cloned.address.city = '上海'
+console.log('getter 跟随变化:', cloned.city)
 
 // 验证不影响原对象
-const symKeys = Object.getOwnPropertySymbols(cloned)
-console.log('Symbol key:', symKeys.length > 0 ? '保留成功' : '丢失')
+console.log('\\n原对象不受影响:', original.address.city)
 
-console.log('\\n✅ 完美版深拷贝通过所有测试')`,
+console.log('\\n✅ 完美版通过')`,
     output: '',
   },
   playground: {
@@ -582,8 +600,8 @@ console.log('JSON后:', JSON.parse(JSON.stringify(obj)))
 // 遇到 Date 字段要注意！它会变成字符串
 // 遇到函数/undefined 会直接消失`,
   `// 测试循环引用
-const a: any = { name: 'A', child: null }
-const b: any = { name: 'B' }
+const a = { name: 'A', child: null }
+const b = { name: 'B' }
 a.child = b
 b.parent = a  // 双向循环引用
 

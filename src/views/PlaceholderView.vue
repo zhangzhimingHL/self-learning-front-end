@@ -34,7 +34,7 @@ const pageMap: Record<string, { title: string; description: string }> = {
   },
   'vue-reactivity': {
     title: 'Vue 3 响应式原理',
-    description: 'Proxy vs Object.defineProperty、依赖收集与触发、ref/reactive/computed 实现、effect 系统',
+    description: 'Proxy + Reflect 拦截机制、与 Object.defineProperty 对比、依赖收集与触发、ref/reactive/computed 实现、effect 系统',
   },
   'vue-vdom': {
     title: '虚拟 DOM 与 diff',
